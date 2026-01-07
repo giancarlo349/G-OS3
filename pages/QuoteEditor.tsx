@@ -199,7 +199,7 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
 
   if (showPrintView) {
     return (
-      <div className="fixed inset-0 z-[2000] bg-slate-100 text-black overflow-auto animate-fade font-soft no-print-bg">
+      <div className="fixed inset-0 z-[2000] bg-slate-100 text-black overflow-auto animate-fade font-soft print:bg-white">
         {/* Barra de Ferramentas - Apenas na Tela */}
         <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-300 p-4 sticky top-0 flex justify-between items-center px-10 shadow-lg z-[2100]">
             <div className="flex items-center gap-6">
@@ -221,63 +221,65 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
             </div>
         </div>
 
-        {/* ESTRUTURA DO DOCUMENTO */}
-        <div className="a4-container mx-auto print:mx-0 print:w-full print:bg-white">
-            <div className="print-content bg-white p-[15mm] shadow-2xl print:shadow-none min-h-[297mm] print:min-h-0 flex flex-col">
+        {/* ESTRUTURA DO DOCUMENTO - CONFIGURADA PARA A4 MILIMETRADO */}
+        <div className="a4-page mx-auto shadow-2xl print:shadow-none print:m-0">
+            <div className="a4-content">
                 
                 {/* CABEÇALHO COM LOGO */}
-                <div className="flex flex-col items-center text-center mb-8 border-b-4 border-emerald-700 pb-6">
+                <div className="flex flex-col items-center text-center mb-6">
                     <img 
                       src="https://www.bazarnovareal.com.br/app/images/layout/logo.png" 
                       alt="Logo Bazar Nova Real" 
-                      className="h-20 mb-4 object-contain"
+                      className="h-24 mb-2 object-contain"
                     />
                     <h1 className="text-2xl font-black uppercase tracking-tight text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
-                    <div className="flex justify-center items-center gap-4 mt-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    <div className="flex justify-center items-center gap-4 mt-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         <span>CNPJ: 05.862.953/0001-82</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-100"></span>
                         <span>(11) 4447-3578</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-100"></span>
                         <span>Cajamar - SP</span>
                     </div>
+                    <div className="w-full h-1 bg-emerald-700 mt-6 mb-8 rounded-full"></div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-10 bg-emerald-50/30 p-5 rounded-2xl border border-emerald-100/50">
+                <div className="grid grid-cols-2 gap-4 mb-8 bg-emerald-50/20 p-6 rounded-3xl border border-emerald-100/50">
                     <div className="space-y-1">
                         <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-widest">CLIENTE</span>
-                        <span className="text-lg font-black text-slate-900 uppercase leading-none">{clientName || 'CONSUMIDOR'}</span>
+                        <span className="text-xl font-black text-slate-900 uppercase leading-none">{clientName || 'CONSUMIDOR'}</span>
                     </div>
                     <div className="text-right space-y-1">
                         <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-widest">DATA DE EMISSÃO</span>
-                        <span className="text-md font-bold text-slate-700">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span className="text-md font-bold text-slate-800">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                     </div>
                 </div>
 
-                <div className="mb-4">
-                  <h3 className="text-xs font-black text-emerald-900 uppercase tracking-[0.2em] mb-3 border-l-4 border-emerald-600 pl-3">ORÇAMENTO DE MATERIAIS</h3>
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-emerald-600 rounded-full"></div>
+                  <h3 className="text-sm font-black text-emerald-900 uppercase tracking-[0.2em]">ORÇAMENTO DE MATERIAIS</h3>
                 </div>
 
                 {/* TABELA DE ITENS */}
                 <div className="flex-grow">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="border-b-2 border-slate-200">
-                                <th className="text-left py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">PRODUTO / DESCRIÇÃO</th>
-                                <th className="text-center py-4 text-[10px] font-black uppercase w-16 text-slate-400">QTD.</th>
-                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-400">PREÇO UNIT.</th>
-                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-400">TOTAL</th>
+                            <tr className="border-b-2 border-slate-100">
+                                <th className="text-left py-4 text-[10px] font-black uppercase tracking-widest text-slate-300">PRODUTO / DESCRIÇÃO</th>
+                                <th className="text-center py-4 text-[10px] font-black uppercase w-16 text-slate-300">QTD.</th>
+                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-300">PREÇO UNIT.</th>
+                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-300">TOTAL</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-50">
                             {items.map((item, idx) => (
-                                <tr key={idx} className="page-break-inside-avoid">
-                                    <td className="py-4 pr-4">
-                                        <div className="text-[11px] font-black text-slate-900 uppercase leading-tight">{item.description}</div>
+                                <tr key={idx} className="avoid-break">
+                                    <td className="py-5 pr-4">
+                                        <div className="text-[12px] font-black text-slate-800 uppercase leading-tight">{item.description}</div>
                                         {item.comment && <div className="text-[9px] font-bold text-slate-400 italic mt-1 uppercase">Nota: {item.comment}</div>}
                                     </td>
-                                    <td className="py-4 text-center text-[11px] font-black text-slate-700">{item.quantity}</td>
-                                    <td className="py-4 text-right text-[11px] font-bold text-slate-500">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                                    <td className="py-4 text-right text-[11px] font-black text-emerald-700">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td className="py-5 text-center text-[12px] font-black text-slate-600">{item.quantity}</td>
+                                    <td className="py-5 text-right text-[12px] font-bold text-slate-400">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td className="py-5 text-right text-[12px] font-black text-emerald-600">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -285,58 +287,98 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
                 </div>
 
                 {/* RESUMO E TOTAL */}
-                <div className="mt-8 pt-8 border-t-4 border-emerald-100 page-break-inside-avoid">
-                    <div className="flex justify-between items-center bg-emerald-900 text-white p-6 rounded-2xl shadow-xl">
-                        <span className="text-xs font-black uppercase tracking-[0.3em]">VALOR TOTAL DO ORÇAMENTO</span>
-                        <div className="text-right">
-                          <span className="text-3xl font-black">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <div className="mt-8 pt-6 border-t-2 border-slate-50 avoid-break">
+                    <div className="flex justify-between items-center bg-emerald-900 text-white p-6 rounded-3xl shadow-xl">
+                        <span className="text-xs font-black uppercase tracking-[0.3em] ml-2">VALOR TOTAL DO ORÇAMENTO</span>
+                        <div className="text-right mr-2">
+                          <span className="text-4xl font-black">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* AVISOS E DISCLAIMERS */}
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 page-break-inside-avoid">
-                    <div className="flex items-start gap-4 p-4 border border-amber-100 bg-amber-50/20 rounded-2xl">
-                        <div className="p-2 bg-amber-100 rounded-full text-amber-600"><AlertTriangle size={20}/></div>
-                        <div>
-                            <h4 className="text-[10px] font-black text-amber-800 uppercase mb-1">AVISO DE ESTOQUE</h4>
+                {/* AVISOS E DISCLAIMERS (DUAS COLUNAS LADO A LADO) */}
+                <div className="mt-10 grid grid-cols-2 gap-4 avoid-break">
+                    <div className="flex items-start gap-4 p-5 border border-amber-100 bg-amber-50/20 rounded-3xl">
+                        <div className="p-2.5 bg-amber-100 rounded-2xl text-amber-600"><AlertTriangle size={20}/></div>
+                        <div className="space-y-1">
+                            <h4 className="text-[10px] font-black text-amber-800 uppercase tracking-widest">AVISO DE ESTOQUE</h4>
                             <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase">Marcas e qualidade podem variar conforme estoque disponível no ato da separação. Adaptamos itens para pronta entrega caso necessário.</p>
                         </div>
                     </div>
-                    <div className="flex items-start gap-4 p-4 border border-emerald-100 bg-emerald-50/20 rounded-2xl">
-                        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600"><Info size={20}/></div>
-                        <div>
-                            <h4 className="text-[10px] font-black text-emerald-800 uppercase mb-1">POLÍTICA DE VALIDADE</h4>
+                    <div className="flex items-start gap-4 p-5 border border-emerald-100 bg-emerald-50/20 rounded-3xl">
+                        <div className="p-2.5 bg-emerald-100 rounded-2xl text-emerald-600"><Info size={20}/></div>
+                        <div className="space-y-1">
+                            <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">POLÍTICA DE VALIDADE</h4>
                             <p className="text-[9px] font-bold text-emerald-700 leading-relaxed uppercase">Válido por 04 dias úteis. Sujeito a alterações diárias de preço e estoque conforme oscilações do mercado atacadista.</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-10 text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-4">
+                <div className="mt-auto pt-10 text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.6em]">
                     ORÇAMENTO GERADO PELO SISTEMA BUDGETHACKER PRO
                 </div>
             </div>
         </div>
         
         <style>{`
-            @media screen {
-                .a4-container { width: 210mm; margin-top: 40px; margin-bottom: 40px; }
-                .print-content { min-height: 297mm; border-radius: 8px; border: 1px solid #e2e8f0; }
+            /* ESTILO PARA TELA */
+            .a4-page {
+                width: 210mm;
+                min-height: 297mm;
+                background: white;
+                margin-top: 40px;
+                margin-bottom: 40px;
+                border-radius: 20px;
             }
+            .a4-content {
+                padding: 20mm;
+                min-height: 297mm;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* AJUSTES GLOBAIS DE COR PARA PDF */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* CONFIGURAÇÃO DE IMPRESSÃO REAL */
             @media print {
-                @page { size: A4; margin: 10mm; }
-                body { background: white !important; margin: 0 !important; padding: 0 !important; }
-                .no-print { display: none !important; }
-                .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; }
-                .print-content { 
-                  box-shadow: none !important; 
-                  padding: 0 !important; 
-                  min-height: 0 !important; 
-                  border: none !important;
+                @page {
+                    size: A4 portrait;
+                    margin: 0;
                 }
-                .page-break-inside-avoid { page-break-inside: avoid; }
-                table { page-break-inside: auto; }
-                tr { page-break-inside: avoid; page-break-after: auto; }
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: white !important;
+                }
+                .no-print {
+                    display: none !important;
+                }
+                .a4-page {
+                    width: 210mm;
+                    height: auto;
+                    min-height: 297mm;
+                    margin: 0 !important;
+                    box-shadow: none !important;
+                    border-radius: 0 !important;
+                    display: block !important;
+                }
+                .a4-content {
+                    padding: 15mm;
+                }
+                .avoid-break {
+                    page-break-inside: avoid;
+                }
+                table {
+                    page-break-inside: auto;
+                }
+                tr {
+                    page-break-inside: avoid;
+                    page-break-after: auto;
+                }
             }
         `}</style>
       </div>
