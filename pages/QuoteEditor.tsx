@@ -9,7 +9,7 @@ import {
   Play, User, Phone, ShoppingBag, Check, 
   ChevronLeft, ChevronUp, ChevronDown, Plus, 
   ShieldAlert, LayoutList, SearchCode, UserCheck, Activity, AlertCircle, Printer, FileText, CheckCircle2,
-  Calendar, Info, Tag, Download
+  Calendar, Info, Tag, Download, AlertTriangle
 } from 'lucide-react';
 
 interface QuoteEditorProps {
@@ -170,7 +170,6 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orçamento");
     
-    // Adicionar linha de total no Excel
     XLSX.utils.sheet_add_aoa(ws, [
       [],
       ['', '', 'TOTAL GERAL', total]
@@ -200,8 +199,9 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
 
   if (showPrintView) {
     return (
-      <div className="fixed inset-0 z-[2000] bg-slate-200 text-black overflow-auto animate-fade font-soft no-print-bg">
-        <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-300 p-4 sticky top-0 flex justify-between items-center px-10 shadow-md z-[2100]">
+      <div className="fixed inset-0 z-[2000] bg-slate-100 text-black overflow-auto animate-fade font-soft no-print-bg">
+        {/* Barra de Ferramentas - Apenas na Tela */}
+        <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-300 p-4 sticky top-0 flex justify-between items-center px-10 shadow-lg z-[2100]">
             <div className="flex items-center gap-6">
                 <button onClick={() => setShowPrintView(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-all font-bold text-xs border border-slate-300 uppercase">
                     <ArrowLeft size={14}/> VOLTAR AO EDITOR
@@ -216,86 +216,104 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
                     <Download size={18}/> EXCEL (.XLSX)
                 </button>
                 <button onClick={() => window.print()} className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black px-10 py-3 rounded-xl shadow-lg transition-all active:scale-95 text-xs">
-                    <Printer size={18}/> IMPRIMIR AGORA
+                    <Printer size={18}/> IMPRIMIR / SALVAR PDF
                 </button>
             </div>
         </div>
 
-        {/* ESTRUTURA DO DOCUMENTO (MELHORADA PARA IMPRESSÃO) */}
-        <div className="a4-container mx-auto print:mx-0 print:w-full">
+        {/* ESTRUTURA DO DOCUMENTO */}
+        <div className="a4-container mx-auto print:mx-0 print:w-full print:bg-white">
             <div className="print-content bg-white p-[15mm] shadow-2xl print:shadow-none min-h-[297mm] print:min-h-0 flex flex-col">
-                {/* CABEÇALHO */}
-                <div className="text-center mb-8">
-                    <h1 className="text-xl font-black uppercase tracking-wide text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
-                    <p className="text-[10px] font-bold text-slate-500 tracking-wider">CNPJ: 05.862.953/0001-82</p>
-                    <div className="flex justify-center items-center gap-3 mt-2 text-[9px] font-bold text-emerald-800">
+                
+                {/* CABEÇALHO COM LOGO */}
+                <div className="flex flex-col items-center text-center mb-8 border-b-4 border-emerald-700 pb-6">
+                    <img 
+                      src="https://www.bazarnovareal.com.br/app/images/layout/logo.png" 
+                      alt="Logo Bazar Nova Real" 
+                      className="h-20 mb-4 object-contain"
+                    />
+                    <h1 className="text-2xl font-black uppercase tracking-tight text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
+                    <div className="flex justify-center items-center gap-4 mt-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        <span>CNPJ: 05.862.953/0001-82</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
                         <span>(11) 4447-3578</span>
-                        <span className="w-1 h-1 rounded-full bg-emerald-300"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
                         <span>Cajamar - SP</span>
                     </div>
                 </div>
 
-                <div className="border-y border-emerald-100 py-4 mb-8 flex justify-between items-center px-4 bg-emerald-50/20 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 mb-10 bg-emerald-50/30 p-5 rounded-2xl border border-emerald-100/50">
                     <div className="space-y-1">
-                        <span className="text-[8px] font-black text-emerald-600 block uppercase">CLIENTE</span>
-                        <span className="text-sm font-black text-slate-900 uppercase">{clientName || 'NÃO INFORMADO'}</span>
+                        <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-widest">CLIENTE</span>
+                        <span className="text-lg font-black text-slate-900 uppercase leading-none">{clientName || 'CONSUMIDOR'}</span>
                     </div>
                     <div className="text-right space-y-1">
-                        <span className="text-[8px] font-black text-emerald-600 block uppercase">EMISSÃO</span>
-                        <span className="text-xs font-bold text-slate-700">{new Date().toLocaleDateString('pt-BR')}</span>
+                        <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-widest">DATA DE EMISSÃO</span>
+                        <span className="text-md font-bold text-slate-700">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                     </div>
                 </div>
 
-                {/* TABELA - O CORAÇÃO DA IMPRESSÃO */}
+                <div className="mb-4">
+                  <h3 className="text-xs font-black text-emerald-900 uppercase tracking-[0.2em] mb-3 border-l-4 border-emerald-600 pl-3">ORÇAMENTO DE MATERIAIS</h3>
+                </div>
+
+                {/* TABELA DE ITENS */}
                 <div className="flex-grow">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="border-b-2 border-emerald-700">
-                                <th className="text-left py-3 text-[9px] font-black uppercase tracking-widest text-emerald-900">PRODUTO</th>
-                                <th className="text-center py-3 text-[9px] font-black uppercase w-12 text-emerald-900">QTD</th>
-                                <th className="text-right py-3 text-[9px] font-black uppercase w-24 text-emerald-900">UNIT.</th>
-                                <th className="text-right py-3 text-[9px] font-black uppercase w-24 text-emerald-900">TOTAL</th>
+                            <tr className="border-b-2 border-slate-200">
+                                <th className="text-left py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">PRODUTO / DESCRIÇÃO</th>
+                                <th className="text-center py-4 text-[10px] font-black uppercase w-16 text-slate-400">QTD.</th>
+                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-400">PREÇO UNIT.</th>
+                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-400">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {items.map((item, idx) => (
                                 <tr key={idx} className="page-break-inside-avoid">
-                                    <td className="py-2.5 text-[10px] font-bold text-slate-800 uppercase">
-                                        {item.description}
-                                        {item.comment && <div className="text-[8px] font-normal text-slate-400 mt-0.5">Nota: {item.comment}</div>}
+                                    <td className="py-4 pr-4">
+                                        <div className="text-[11px] font-black text-slate-900 uppercase leading-tight">{item.description}</div>
+                                        {item.comment && <div className="text-[9px] font-bold text-slate-400 italic mt-1 uppercase">Nota: {item.comment}</div>}
                                     </td>
-                                    <td className="py-2.5 text-center text-[10px] font-medium text-slate-500">{item.quantity}</td>
-                                    <td className="py-2.5 text-right text-[10px] font-medium text-slate-500">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                                    <td className="py-2.5 text-right text-[10px] font-black text-slate-900">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td className="py-4 text-center text-[11px] font-black text-slate-700">{item.quantity}</td>
+                                    <td className="py-4 text-right text-[11px] font-bold text-slate-500">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td className="py-4 text-right text-[11px] font-black text-emerald-700">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             ))}
                         </tbody>
-                        <tfoot>
-                            <tr className="border-t-2 border-emerald-900">
-                                <td colSpan={3} className="pt-6 text-right text-[10px] font-black text-emerald-800 uppercase tracking-widest">VALOR TOTAL DO ORÇAMENTO</td>
-                                <td className="pt-6 text-right text-lg font-black text-emerald-900">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
 
-                {/* RODAPÉ */}
-                <div className="mt-12 pt-8 border-t border-slate-100 page-break-inside-avoid">
-                    <div className="grid grid-cols-2 gap-10">
-                        <div className="bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
-                            <h4 className="text-[8px] font-black text-emerald-800 mb-2 uppercase">INFORMAÇÕES ADICIONAIS</h4>
-                            <p className="text-[8px] leading-relaxed text-slate-500 uppercase font-bold">
-                                • Validade: 04 dias úteis.<br/>
-                                • Sujeito a alteração de estoque sem aviso prévio.<br/>
-                                • Adaptamos marcas conforme disponibilidade para pronta entrega.
-                            </p>
-                        </div>
-                        <div className="flex flex-col justify-end items-center pb-2">
-                            <div className="w-48 h-[1px] bg-slate-200 mb-2"></div>
-                            <span className="text-[8px] font-black text-slate-300 uppercase mb-1">RESPONSÁVEL</span>
-                            <span className="text-[10px] font-black text-slate-700 uppercase">{author || 'BAZAR NOVA REAL'}</span>
+                {/* RESUMO E TOTAL */}
+                <div className="mt-8 pt-8 border-t-4 border-emerald-100 page-break-inside-avoid">
+                    <div className="flex justify-between items-center bg-emerald-900 text-white p-6 rounded-2xl shadow-xl">
+                        <span className="text-xs font-black uppercase tracking-[0.3em]">VALOR TOTAL DO ORÇAMENTO</span>
+                        <div className="text-right">
+                          <span className="text-3xl font-black">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
+                </div>
+
+                {/* AVISOS E DISCLAIMERS */}
+                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 page-break-inside-avoid">
+                    <div className="flex items-start gap-4 p-4 border border-amber-100 bg-amber-50/20 rounded-2xl">
+                        <div className="p-2 bg-amber-100 rounded-full text-amber-600"><AlertTriangle size={20}/></div>
+                        <div>
+                            <h4 className="text-[10px] font-black text-amber-800 uppercase mb-1">AVISO DE ESTOQUE</h4>
+                            <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase">Marcas e qualidade podem variar conforme estoque disponível no ato da separação. Adaptamos itens para pronta entrega caso necessário.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 border border-emerald-100 bg-emerald-50/20 rounded-2xl">
+                        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600"><Info size={20}/></div>
+                        <div>
+                            <h4 className="text-[10px] font-black text-emerald-800 uppercase mb-1">POLÍTICA DE VALIDADE</h4>
+                            <p className="text-[9px] font-bold text-emerald-700 leading-relaxed uppercase">Válido por 04 dias úteis. Sujeito a alterações diárias de preço e estoque conforme oscilações do mercado atacadista.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-10 text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-4">
+                    ORÇAMENTO GERADO PELO SISTEMA BUDGETHACKER PRO
                 </div>
             </div>
         </div>
@@ -303,15 +321,22 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
         <style>{`
             @media screen {
                 .a4-container { width: 210mm; margin-top: 40px; margin-bottom: 40px; }
-                .print-content { min-height: 297mm; border-radius: 4px; }
+                .print-content { min-height: 297mm; border-radius: 8px; border: 1px solid #e2e8f0; }
             }
             @media print {
-                @page { size: A4; margin: 15mm; }
-                body { background: white !important; margin: 0 !important; }
+                @page { size: A4; margin: 10mm; }
+                body { background: white !important; margin: 0 !important; padding: 0 !important; }
                 .no-print { display: none !important; }
-                .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-                .print-content { box-shadow: none !important; padding: 0 !important; min-height: 0 !important; }
+                .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; }
+                .print-content { 
+                  box-shadow: none !important; 
+                  padding: 0 !important; 
+                  min-height: 0 !important; 
+                  border: none !important;
+                }
                 .page-break-inside-avoid { page-break-inside: avoid; }
+                table { page-break-inside: auto; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
             }
         `}</style>
       </div>
