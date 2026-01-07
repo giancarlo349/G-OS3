@@ -392,10 +392,6 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
                         </div>
                     </div>
                 </div>
-
-                <div className="mt-8 text-center text-[7px] font-black text-slate-300 uppercase tracking-[0.4em] font-mono">
-                    GERADO PELO BUDGETHACKER PRO • DOCUMENTO DIGITAL
-                </div>
             </div>
         </div>
         
