@@ -4,12 +4,13 @@ import { ref, push, set, onValue } from 'firebase/database';
 import { db } from '../services/firebase';
 import { Quote, QuoteItem, Product, User as AppUser, QuoteStatus } from '../types';
 import * as XLSX from 'xlsx';
+import html2pdf from 'html2pdf.js';
 import { 
   X, Trash2, Save, Search, ArrowLeft, ChevronRight,
   Play, User, Phone, ShoppingBag, Check, 
   ChevronLeft, ChevronUp, ChevronDown, Plus, 
   ShieldAlert, LayoutList, SearchCode, UserCheck, Activity, AlertCircle, Printer, FileText, CheckCircle2,
-  Calendar, Info, Tag, Download, AlertTriangle
+  Calendar, Info, Tag, Download, AlertTriangle, FileDown, MapPin
 } from 'lucide-react';
 
 interface QuoteEditorProps {
@@ -25,6 +26,7 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
   const [status, setStatus] = useState<QuoteStatus>(quote?.status || 'Pendente');
   const [items, setItems] = useState<QuoteItem[]>(quote?.items || []);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPrintView, setShowPrintView] = useState(false);
   const [copiedSuccess, setCopiedSuccess] = useState(false);
@@ -43,6 +45,8 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
 
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const printRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -178,6 +182,74 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
     XLSX.writeFile(wb, `Orcamento_${clientName.replace(/\s+/g, '_')}.xlsx`);
   };
 
+  const convertImageToBase64 = (url: string): Promise<string> => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            } catch (e) {
+                console.warn("Falha ao processar imagem:", e);
+                resolve(url);
+            }
+        };
+        img.onerror = () => resolve(url);
+        img.src = url;
+    });
+  };
+
+  const exportToPDF = async () => {
+    if (!printRef.current) return;
+    
+    const html2pdfLib = (html2pdf as any).default || html2pdf;
+    if (typeof html2pdfLib !== 'function') {
+      setErrorMsg('Falha ao carregar motor de PDF.');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      await document.fonts.ready;
+
+      const logoUrl = 'logo.png';
+      const base64Logo = await convertImageToBase64(logoUrl);
+      const originalLogoSrc = logoRef.current?.src || logoUrl;
+      
+      if (logoRef.current) logoRef.current.src = base64Logo;
+
+      const opt = {
+        margin: 0,
+        filename: `ORC_${clientName.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          logging: false
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdfLib().set(opt).from(printRef.current).save();
+
+      if (logoRef.current) logoRef.current.src = originalLogoSrc;
+      
+      setCopiedSuccess(true);
+      setTimeout(() => setCopiedSuccess(false), 3000);
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      setErrorMsg('Falha ao processar o arquivo PDF.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleGenerateBudget = async () => {
     const success = await saveQuote(true);
     if (success) {
@@ -200,185 +272,165 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
   if (showPrintView) {
     return (
       <div className="fixed inset-0 z-[2000] bg-slate-100 text-black overflow-auto animate-fade font-soft print:bg-white">
-        {/* Barra de Ferramentas - Apenas na Tela */}
         <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-300 p-4 sticky top-0 flex justify-between items-center px-10 shadow-lg z-[2100]">
             <div className="flex items-center gap-6">
                 <button onClick={() => setShowPrintView(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-all font-bold text-xs border border-slate-300 uppercase">
                     <ArrowLeft size={14}/> VOLTAR AO EDITOR
                 </button>
                 <div className="flex flex-col">
-                   <span className="text-emerald-700 font-black uppercase text-[10px] tracking-widest">SISTEMA DE IMPRESSÃO A4</span>
-                   {copiedSuccess && <span className="text-emerald-500 text-[9px] font-bold animate-pulse flex items-center gap-1"><CheckCircle2 size={10}/> MENSAGEM COPIADA</span>}
+                   <span className="text-emerald-700 font-black uppercase text-[10px] tracking-widest">SISTEMA DE EXPORTAÇÃO A4</span>
+                   {copiedSuccess && <span className="text-emerald-500 text-[9px] font-bold animate-pulse flex items-center gap-1"><CheckCircle2 size={10}/> OPERAÇÃO CONCLUÍDA</span>}
                 </div>
             </div>
             <div className="flex gap-3">
+                <button 
+                  onClick={exportToPDF} 
+                  disabled={exporting}
+                  className="flex items-center gap-3 bg-emerald-700 hover:bg-emerald-600 text-white font-black px-8 py-3 rounded-xl shadow-lg transition-all active:scale-95 text-xs disabled:opacity-50"
+                >
+                    {exporting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FileDown size={18}/>}
+                    {exporting ? 'GERANDO PDF...' : 'SALVAR EM PDF'}
+                </button>
                 <button onClick={exportToExcel} className="flex items-center gap-3 bg-slate-100 border border-slate-300 hover:bg-white text-slate-700 font-black px-6 py-3 rounded-xl shadow-sm transition-all text-xs">
                     <Download size={18}/> EXCEL (.XLSX)
-                </button>
-                <button onClick={() => window.print()} className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black px-10 py-3 rounded-xl shadow-lg transition-all active:scale-95 text-xs">
-                    <Printer size={18}/> IMPRIMIR / SALVAR PDF
                 </button>
             </div>
         </div>
 
-        {/* ESTRUTURA DO DOCUMENTO - CONFIGURADA PARA A4 MILIMETRADO */}
-        <div className="a4-page mx-auto shadow-2xl print:shadow-none print:m-0">
+        <div ref={printRef} className="a4-page mx-auto shadow-2xl print:shadow-none print:m-0 bg-white">
             <div className="a4-content">
-                
-                {/* CABEÇALHO COM LOGO */}
-                <div className="flex flex-col items-center text-center mb-6">
+                <div className="flex flex-col items-center text-center mb-4">
                     <img 
-                      src="https://www.bazarnovareal.com.br/app/images/layout/logo.png" 
+                      ref={logoRef}
+                      src="logo.png" 
                       alt="Logo Bazar Nova Real" 
-                      className="h-24 mb-2 object-contain"
+                      className="h-20 mb-1 object-contain"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
-                    <h1 className="text-2xl font-black uppercase tracking-tight text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
-                    <div className="flex justify-center items-center gap-4 mt-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <span>CNPJ: 05.862.953/0001-82</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-100"></span>
-                        <span>(11) 4447-3578</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-100"></span>
-                        <span>Cajamar - SP</span>
+                    <h1 className="text-lg font-black uppercase tracking-tight text-emerald-900 font-outfit" style={{ fontFamily: 'Outfit, sans-serif' }}>MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
+                    
+                    <div className="flex flex-col items-center gap-1 mt-1">
+                        <div className="flex justify-center items-center gap-3 text-[8px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                            <span>CNPJ: 05.862.953/0001-82</span>
+                            <span className="w-1 h-1 rounded-full bg-emerald-200"></span>
+                            <span>(11) 4447-3578</span>
+                            <span className="w-1 h-1 rounded-full bg-emerald-200"></span>
+                            <span>Cajamar - SP</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-[8px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                            <MapPin size={8} className="text-emerald-500" />
+                            <span>Avenida Joaquim Janus Penteado, 125, Altos de Jordanésia (Jordanésia)</span>
+                        </div>
                     </div>
-                    <div className="w-full h-1 bg-emerald-700 mt-6 mb-8 rounded-full"></div>
+                    <div className="w-full h-0.5 bg-emerald-700 mt-4 mb-6 rounded-full opacity-50"></div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8 bg-emerald-50/20 p-6 rounded-3xl border border-emerald-100/50">
+                <div className="grid grid-cols-2 gap-4 mb-6 bg-emerald-50/20 p-6 rounded-[1.5rem] border border-emerald-100/50">
                     <div className="space-y-1">
-                        <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-widest">CLIENTE</span>
-                        <span className="text-xl font-black text-slate-900 uppercase leading-none">{clientName || 'CONSUMIDOR'}</span>
+                        <span className="text-[8px] font-black text-emerald-600 block uppercase tracking-widest">CLIENTE</span>
+                        <span className="text-base font-black text-slate-900 uppercase leading-none font-outfit" style={{ fontFamily: 'Outfit, sans-serif' }}>{clientName || 'CONSUMIDOR'}</span>
                     </div>
                     <div className="text-right space-y-1">
-                        <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-widest">DATA DE EMISSÃO</span>
-                        <span className="text-md font-bold text-slate-800">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span className="text-[8px] font-black text-emerald-600 block uppercase tracking-widest">DATA DE EMISSÃO</span>
+                        <span className="text-xs font-bold text-slate-800">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                     </div>
                 </div>
 
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="w-1.5 h-6 bg-emerald-600 rounded-full"></div>
-                  <h3 className="text-sm font-black text-emerald-900 uppercase tracking-[0.2em]">ORÇAMENTO DE MATERIAIS</h3>
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-emerald-600 rounded-full"></div>
+                  <h3 className="text-[10px] font-black text-emerald-900 uppercase tracking-[0.2em]">ORÇAMENTO DE MATERIAIS</h3>
                 </div>
 
-                {/* TABELA DE ITENS */}
                 <div className="flex-grow">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-b-2 border-slate-100">
-                                <th className="text-left py-4 text-[10px] font-black uppercase tracking-widest text-slate-300">PRODUTO / DESCRIÇÃO</th>
-                                <th className="text-center py-4 text-[10px] font-black uppercase w-16 text-slate-300">QTD.</th>
-                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-300">PREÇO UNIT.</th>
-                                <th className="text-right py-4 text-[10px] font-black uppercase w-28 text-slate-300">TOTAL</th>
+                                <th className="text-left py-2 text-[8px] font-black uppercase tracking-widest text-slate-300">PRODUTO / DESCRIÇÃO</th>
+                                <th className="text-center py-2 text-[8px] font-black uppercase w-12 text-slate-300">QTD.</th>
+                                <th className="text-right py-2 text-[8px] font-black uppercase w-24 text-slate-300">PREÇO UNIT.</th>
+                                <th className="text-right py-2 text-[8px] font-black uppercase w-24 text-slate-300">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {items.map((item, idx) => (
                                 <tr key={idx} className="avoid-break">
-                                    <td className="py-5 pr-4">
-                                        <div className="text-[12px] font-black text-slate-800 uppercase leading-tight">{item.description}</div>
-                                        {item.comment && <div className="text-[9px] font-bold text-slate-400 italic mt-1 uppercase">Nota: {item.comment}</div>}
+                                    <td className="py-3 pr-4">
+                                        <div className="text-[11px] font-black text-slate-800 uppercase leading-tight font-outfit" style={{ fontFamily: 'Outfit, sans-serif' }}>{item.description}</div>
+                                        {item.comment && <div className="text-[8px] font-bold text-slate-400 italic mt-0.5 uppercase">Nota: {item.comment}</div>}
                                     </td>
-                                    <td className="py-5 text-center text-[12px] font-black text-slate-600">{item.quantity}</td>
-                                    <td className="py-5 text-right text-[12px] font-bold text-slate-400">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                                    <td className="py-5 text-right text-[12px] font-black text-emerald-600">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td className="py-3 text-center text-[10px] font-black text-slate-600 font-mono" style={{ fontFamily: 'Fira Code, monospace' }}>{item.quantity}</td>
+                                    <td className="py-3 text-right text-[10px] font-bold text-slate-400 font-mono" style={{ fontFamily: 'Fira Code, monospace' }}>R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td className="py-3 text-right text-[10px] font-black text-emerald-700 font-mono" style={{ fontFamily: 'Fira Code, monospace' }}>R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
 
-                {/* RESUMO E TOTAL */}
-                <div className="mt-8 pt-6 border-t-2 border-slate-50 avoid-break">
-                    <div className="flex justify-between items-center bg-emerald-900 text-white p-6 rounded-3xl shadow-xl">
-                        <span className="text-xs font-black uppercase tracking-[0.3em] ml-2">VALOR TOTAL DO ORÇAMENTO</span>
-                        <div className="text-right mr-2">
-                          <span className="text-4xl font-black">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <div className="mt-4 pt-4 border-t-2 border-slate-50 avoid-break">
+                    <div className="flex justify-between items-center bg-emerald-900 text-white p-6 rounded-[1.2rem] shadow-lg">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] ml-1">VALOR TOTAL</span>
+                        <div className="text-right mr-1">
+                          <span className="text-2xl font-black font-outfit" style={{ fontFamily: 'Outfit, sans-serif' }}>R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* AVISOS E DISCLAIMERS (DUAS COLUNAS LADO A LADO) */}
-                <div className="mt-10 grid grid-cols-2 gap-4 avoid-break">
-                    <div className="flex items-start gap-4 p-5 border border-amber-100 bg-amber-50/20 rounded-3xl">
-                        <div className="p-2.5 bg-amber-100 rounded-2xl text-amber-600"><AlertTriangle size={20}/></div>
-                        <div className="space-y-1">
-                            <h4 className="text-[10px] font-black text-amber-800 uppercase tracking-widest">AVISO DE ESTOQUE</h4>
-                            <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase">Marcas e qualidade podem variar conforme estoque disponível no ato da separação. Adaptamos itens para pronta entrega caso necessário.</p>
+                <div className="mt-6 grid grid-cols-2 gap-3 avoid-break">
+                    <div className="flex items-start gap-3 p-4 border border-amber-100 bg-amber-50/10 rounded-[1.2rem]">
+                        <div className="p-2 bg-amber-100 rounded-xl text-amber-600 flex-shrink-0"><AlertTriangle size={16}/></div>
+                        <div className="space-y-0.5">
+                            <h4 className="text-[8px] font-black text-amber-800 uppercase tracking-widest">AVISO DE ESTOQUE</h4>
+                            <p className="text-[7px] font-bold text-amber-700 leading-tight uppercase">Marcas e qualidade podem variar conforme estoque disponível.</p>
                         </div>
                     </div>
-                    <div className="flex items-start gap-4 p-5 border border-emerald-100 bg-emerald-50/20 rounded-3xl">
-                        <div className="p-2.5 bg-emerald-100 rounded-2xl text-emerald-600"><Info size={20}/></div>
-                        <div className="space-y-1">
-                            <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">POLÍTICA DE VALIDADE</h4>
-                            <p className="text-[9px] font-bold text-emerald-700 leading-relaxed uppercase">Válido por 04 dias úteis. Sujeito a alterações diárias de preço e estoque conforme oscilações do mercado atacadista.</p>
+                    <div className="flex items-start gap-3 p-4 border border-emerald-100 bg-emerald-50/10 rounded-[1.2rem]">
+                        <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600 flex-shrink-0"><Info size={16}/></div>
+                        <div className="space-y-0.5">
+                            <h4 className="text-[8px] font-black text-emerald-800 uppercase tracking-widest">VALIDADE</h4>
+                            <p className="text-[7px] font-bold text-emerald-700 leading-tight uppercase">Válido por 04 dias úteis. Sujeito a alterações de preço.</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-auto pt-10 text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.6em]">
-                    ORÇAMENTO GERADO PELO SISTEMA BUDGETHACKER PRO
+                <div className="mt-8 text-center text-[7px] font-black text-slate-300 uppercase tracking-[0.4em] font-mono">
+                    GERADO PELO BUDGETHACKER PRO • DOCUMENTO DIGITAL
                 </div>
             </div>
         </div>
         
         <style>{`
-            /* ESTILO PARA TELA */
             .a4-page {
                 width: 210mm;
                 min-height: 297mm;
                 background: white;
-                margin-top: 40px;
-                margin-bottom: 40px;
-                border-radius: 20px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                border-radius: 2px;
+                position: relative;
+                overflow: hidden;
+                font-family: 'Outfit', sans-serif;
             }
             .a4-content {
-                padding: 20mm;
+                padding: 10mm;
                 min-height: 297mm;
                 display: flex;
                 flex-direction: column;
+                background: white;
             }
-
-            /* AJUSTES GLOBAIS DE COR PARA PDF */
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-
-            /* CONFIGURAÇÃO DE IMPRESSÃO REAL */
             @media print {
-                @page {
-                    size: A4 portrait;
-                    margin: 0;
-                }
-                body {
-                    margin: 0;
-                    padding: 0;
-                    background: white !important;
-                }
-                .no-print {
-                    display: none !important;
-                }
-                .a4-page {
-                    width: 210mm;
-                    height: auto;
-                    min-height: 297mm;
-                    margin: 0 !important;
-                    box-shadow: none !important;
-                    border-radius: 0 !important;
-                    display: block !important;
-                }
-                .a4-content {
-                    padding: 15mm;
-                }
-                .avoid-break {
-                    page-break-inside: avoid;
-                }
-                table {
-                    page-break-inside: auto;
-                }
-                tr {
-                    page-break-inside: avoid;
-                    page-break-after: auto;
-                }
+                @page { size: A4; margin: 0; }
+                body { background: white !important; margin: 0 !important; }
+                .no-print { display: none !important; }
+                .a4-page { width: 100% !important; margin: 0 !important; border-radius: 0 !important; }
+            }
+            .avoid-break {
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
         `}</style>
       </div>
@@ -672,7 +724,6 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
         </div>
       </div>
 
-      {/* MODAL DE EXCLUSÃO FIXO NO MEIO DA VIEWPORT */}
       {itemToDelete && (
         <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-slate-950/90 backdrop-blur-md animate-fade">
            <div className="bg-slate-900 border border-red-500/50 p-8 rounded-[2rem] max-w-sm w-full shadow-2xl space-y-6 mx-4">
