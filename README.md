@@ -1,31 +1,20 @@
-# Next.js & Cloudinary example app
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-This example shows how to create an image gallery site using Next.js, [Cloudinary](https://cloudinary.com), and [Tailwind](https://tailwindcss.com).
+# Run and deploy your AI Studio app
 
-## Deploy your own
+This contains everything you need to run your app locally.
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or view the demo [here](https://nextconf-images.vercel.app/)
+View your app in AI Studio: https://ai.studio/apps/drive/1YMu6vUzPxl1zjTMtuVxc2Yis3C38D7BW
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-cloudinary&project-name=nextjs-image-gallery&repository-name=with-cloudinary&env=NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET,CLOUDINARY_FOLDER&envDescription=API%20Keys%20from%20Cloudinary%20needed%20to%20run%20this%20application.)
+## Run Locally
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+**Prerequisites:**  Node.js
 
-## How to use
 
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
-
-```bash
-npx create-next-app --example with-cloudinary with-cloudinary-app
-```
-
-```bash
-yarn create next-app --example with-cloudinary with-cloudinary-app
-```
-
-```bash
-pnpm create next-app --example with-cloudinary with-cloudinary-app
-```
-
-## References
-
-- Cloudinary API: https://cloudinary.com/documentation/transformation_reference
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

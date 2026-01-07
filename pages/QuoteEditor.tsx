@@ -177,10 +177,10 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
 
   if (showPrintView) {
     return (
-      <div className="fixed inset-0 z-[2000] bg-slate-50 text-black overflow-auto animate-fade font-soft">
-        <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200 p-4 sticky top-0 flex justify-between items-center px-10 shadow-sm">
+      <div className="fixed inset-0 z-[2000] bg-slate-200 text-black overflow-auto animate-fade font-soft no-print-bg">
+        <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-300 p-4 sticky top-0 flex justify-between items-center px-10 shadow-md z-[2100]">
             <div className="flex items-center gap-6">
-                <button onClick={() => setShowPrintView(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-all font-bold text-xs border border-slate-200 uppercase">
+                <button onClick={() => setShowPrintView(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-all font-bold text-xs border border-slate-300 uppercase">
                     <ArrowLeft size={14}/> VOLTAR AO EDITOR
                 </button>
                 <div className="flex flex-col">
@@ -193,150 +193,162 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
             </button>
         </div>
 
-        {/* DOCUMENTO FORMAL EM PORTUGUÊS (OTIMIZADO PARA A4) */}
-        <div className="a4-container mx-auto bg-white text-black shadow-2xl my-10 print:my-0 print:shadow-none budget-document relative">
-            <div className="p-[15mm] h-full flex flex-col">
-              {/* CABEÇALHO SUAVE */}
-              <div className="flex flex-col items-center text-center space-y-2 mb-10">
-                  <div className="w-16 h-16 mb-2 flex items-center justify-center bg-yellow-50 rounded-full border-2 border-yellow-200">
-                      <ShoppingBag size={32} className="text-emerald-700" />
-                  </div>
-                  <h1 className="text-xl font-black uppercase tracking-wide text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
-                  <p className="text-[10px] font-bold text-slate-500 tracking-wider">CNPJ: 05.862.953/0001-82</p>
-                  <p className="text-[9px] text-slate-400 max-w-md font-medium uppercase">
-                    RUA JOAQUIM JANUS PENTEADO, 125 | A. JORDANESIA/ CAJAMAR-SP | CEP 07786-520
-                  </p>
-                  <div className="flex items-center gap-3 mt-2 text-[9px] font-bold text-emerald-800 bg-emerald-50 px-5 py-1 rounded-full border border-emerald-100">
-                    <span className="flex items-center gap-1"><Phone size={8}/> (11) 4447-3578</span>
-                    <span className="w-1 h-1 rounded-full bg-emerald-300"></span>
-                    <span>vendasbazarnovareal@gmail.com</span>
-                  </div>
-              </div>
+        {/* DOCUMENTO FORMAL EM PORTUGUÊS (ESTRUTURA A4 GARANTIDA) */}
+        <div className="a4-page mx-auto bg-white text-black shadow-2xl my-10 print:my-0 print:shadow-none budget-document">
+            {/* CABEÇALHO */}
+            <div className="flex flex-col items-center text-center space-y-2 pt-[15mm] pb-8 px-[15mm]">
+                <div className="w-16 h-16 mb-2 flex items-center justify-center bg-yellow-50 rounded-full border-2 border-yellow-200">
+                    <ShoppingBag size={32} className="text-emerald-700" />
+                </div>
+                <h1 className="text-xl font-black uppercase tracking-wide text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
+                <p className="text-[10px] font-bold text-slate-500 tracking-wider">CNPJ: 05.862.953/0001-82</p>
+                <p className="text-[9px] text-slate-400 max-w-md font-medium uppercase">
+                  RUA JOAQUIM JANUS PENTEADO, 125 | A. JORDANESIA/ CAJAMAR-SP | CEP 07786-520
+                </p>
+                <div className="flex items-center gap-3 mt-2 text-[9px] font-bold text-emerald-800 bg-emerald-50 px-5 py-1 rounded-full border border-emerald-100">
+                  <span className="flex items-center gap-1"><Phone size={8}/> (11) 4447-3578</span>
+                  <span className="w-1 h-1 rounded-full bg-emerald-300"></span>
+                  <span>vendasbazarnovareal@gmail.com</span>
+                </div>
+            </div>
 
-              <div className="flex items-center gap-4 mb-8">
-                  <div className="h-[1px] flex-grow bg-slate-100"></div>
-                  <h2 className="text-center text-[10px] font-black tracking-[0.4em] uppercase text-slate-400 font-outfit">ORÇAMENTO DE MATERIAIS</h2>
-                  <div className="h-[1px] flex-grow bg-slate-100"></div>
-              </div>
+            {/* SEPARADOR E TÍTULO */}
+            <div className="flex items-center gap-4 mb-8 px-[15mm]">
+                <div className="h-[1px] flex-grow bg-emerald-100"></div>
+                <h2 className="text-center text-[10px] font-black tracking-[0.4em] uppercase text-slate-400 font-outfit">ORÇAMENTO DE MATERIAIS</h2>
+                <div className="h-[1px] flex-grow bg-emerald-100"></div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-8 mb-6 px-1">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest"><User size={10}/> CLIENTE</div>
-                    <div className="text-base font-black text-slate-900 border-b border-emerald-50 pb-0.5">{clientName || 'NÃO INFORMADO'}</div>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <div className="flex items-center justify-end gap-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest"><Calendar size={10}/> EMISSÃO</div>
-                    <div className="text-sm font-bold text-slate-800">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                  </div>
-              </div>
+            {/* INFO CLIENTE */}
+            <div className="grid grid-cols-2 gap-8 mb-6 px-[15mm]">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest"><User size={10}/> CLIENTE</div>
+                  <div className="text-base font-black text-slate-900 border-b border-emerald-50 pb-0.5">{clientName || 'NÃO INFORMADO'}</div>
+                </div>
+                <div className="text-right space-y-1">
+                  <div className="flex items-center justify-end gap-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest"><Calendar size={10}/> DATA DE EMISSÃO</div>
+                  <div className="text-sm font-bold text-slate-800">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                </div>
+            </div>
 
-              {/* TABELA LIMPA E SUAVE */}
-              <div className="flex-grow overflow-hidden border border-slate-100 rounded-2xl shadow-sm">
-                  <table className="w-full border-collapse">
-                      <thead>
-                          <tr className="bg-emerald-600 text-white">
-                              <th className="px-5 py-3 text-left uppercase text-[9px] font-black tracking-widest">PRODUTO / DESCRIÇÃO</th>
-                              <th className="px-5 py-3 text-center text-[9px] font-black w-16">QTD.</th>
-                              <th className="px-5 py-3 text-right text-[9px] font-black w-32">PREÇO UNIT.</th>
-                              <th className="px-5 py-3 text-right text-[9px] font-black w-32">TOTAL</th>
-                          </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                          {items.map((item, idx) => (
-                              <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-yellow-50/20'}>
-                                  <td className="px-5 py-2.5 text-[10px] uppercase font-bold text-slate-700">
-                                      <div className="flex items-start gap-2">
-                                          <Tag size={8} className="mt-1 text-emerald-200" />
-                                          <span>{item.description}</span>
+            {/* TABELA DE ITENS */}
+            <div className="px-[15mm] pb-8">
+                <table className="w-full border-collapse border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
+                    <thead>
+                        <tr className="bg-emerald-600 text-white">
+                            <th className="px-5 py-3 text-left uppercase text-[9px] font-black tracking-widest border-b border-emerald-700">PRODUTO / DESCRIÇÃO</th>
+                            <th className="px-5 py-3 text-center text-[9px] font-black w-16 border-b border-emerald-700">QTD.</th>
+                            <th className="px-5 py-3 text-right text-[9px] font-black w-32 border-b border-emerald-700">PREÇO UNIT.</th>
+                            <th className="px-5 py-3 text-right text-[9px] font-black w-32 border-b border-emerald-700">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                        {items.map((item, idx) => (
+                            <tr key={idx} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-emerald-50/10'} page-break-inside-avoid`}>
+                                <td className="px-5 py-2.5 text-[10px] uppercase font-bold text-slate-700">
+                                    <div className="flex items-start gap-2">
+                                        <Tag size={8} className="mt-1 text-emerald-200" />
+                                        <span>{item.description}</span>
+                                    </div>
+                                    {item.comment && (
+                                      <div className="text-[8px] italic text-slate-400 font-medium mt-0.5 ml-4">
+                                        Nota: {item.comment}
                                       </div>
-                                      {item.comment && (
-                                        <div className="text-[8px] italic text-slate-400 font-medium mt-0.5 ml-4">
-                                          Nota: {item.comment}
-                                        </div>
-                                      )}
-                                  </td>
-                                  <td className="px-5 py-2.5 text-center text-[10px] font-bold text-slate-500">{item.quantity}</td>
-                                  <td className="px-5 py-2.5 text-right text-[10px] font-medium text-slate-500">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                                  <td className="px-5 py-2.5 text-right text-[10px] font-black text-emerald-900">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                              </tr>
-                          ))}
-                          {[...Array(Math.max(0, 15 - items.length))].map((_, i) => (
-                              <tr key={`empty-${i}`} className={`h-8 ${(items.length + i) % 2 === 0 ? 'bg-white' : 'bg-yellow-50/20'}`}>
-                                  <td></td><td></td><td></td><td></td>
-                              </tr>
-                          ))}
-                      </tbody>
-                  </table>
-              </div>
+                                    )}
+                                </td>
+                                <td className="px-5 py-2.5 text-center text-[10px] font-bold text-slate-500">{item.quantity}</td>
+                                <td className="px-5 py-2.5 text-right text-[10px] font-medium text-slate-500">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                <td className="px-5 py-2.5 text-right text-[10px] font-black text-emerald-900">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
-              {/* RODAPÉ DO DOCUMENTO */}
-              <div className="mt-8 border-t border-emerald-100 pt-6">
-                <div className="flex justify-between items-center mb-10 px-4">
-                   <div className="text-[9px] font-black uppercase text-emerald-800 tracking-widest">VALOR TOTAL DO ORÇAMENTO</div>
-                   <div className="text-xl font-black text-emerald-900">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            {/* TOTAL E RODAPÉ (GARANTIDOS DENTRO DO FLUXO) */}
+            <div className="px-[15mm] pb-[15mm] page-break-inside-avoid">
+                <div className="flex justify-between items-center mb-10 bg-emerald-50/50 p-5 rounded-2xl border border-emerald-200">
+                   <div className="text-[10px] font-black uppercase text-emerald-800 tracking-widest">VALOR TOTAL DO ORÇAMENTO</div>
+                   <div className="text-2xl font-black text-emerald-900">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                 </div>
 
-                <div className="grid grid-cols-[1fr_200px] gap-8 items-start">
-                    <div className="space-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                <div className="grid grid-cols-[1fr_200px] gap-8 items-start mb-10">
+                    <div className="space-y-4 bg-emerald-50/20 p-5 rounded-2xl border border-emerald-100">
                       <div className="flex gap-3">
                           <div className="w-8 h-8 flex-shrink-0 bg-yellow-100 text-yellow-700 flex items-center justify-center font-black text-xs rounded-xl shadow-sm">!</div>
                           <div className="space-y-0.5">
-                            <p className="text-[9px] font-black text-slate-900 uppercase">Aviso de Estoque</p>
+                            <p className="text-[9px] font-black text-slate-900 uppercase tracking-tighter">Aviso de Estoque</p>
                             <p className="text-[8px] font-medium text-slate-500 leading-tight">
-                                Marcas e qualidade podem variar. Adaptamos alguns itens para pronta entrega caso necessário.
+                                Marcas e qualidade podem variar conforme estoque disponível no ato da separação. Adaptamos itens para pronta entrega caso necessário.
                             </p>
                           </div>
                       </div>
                       <div className="flex gap-3">
                           <div className="w-8 h-8 flex-shrink-0 bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-xs rounded-xl shadow-sm"><Info size={14}/></div>
                           <div className="space-y-0.5">
-                            <p className="text-[9px] font-black text-slate-900 uppercase">Política de Validade</p>
+                            <p className="text-[9px] font-black text-slate-900 uppercase tracking-tighter">Política de Validade</p>
                             <p className="text-[8px] font-bold text-emerald-700 italic leading-tight">
-                                Válido por 04 dias úteis. Sujeito a alterações diárias de preço e estoque.
+                                Válido por 04 dias úteis. Sujeito a alterações diárias de preço e estoque conforme oscilações do mercado atacadista.
                             </p>
                           </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-center justify-center self-end pb-2">
-                        <div className="text-center space-y-2">
+                    <div className="flex flex-col items-center justify-center self-end border-t border-emerald-100 pt-3">
+                        <div className="text-center space-y-1">
                             <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">ATENDENTE RESPONSÁVEL</p>
-                            <div className="text-sm font-black text-emerald-900 border-b border-emerald-100 px-4 min-w-[150px]">
-                              {author.toUpperCase() || 'EQUIPE BAZAR'}
+                            <div className="text-sm font-black text-emerald-900 pt-1 uppercase">
+                              {author || 'COLABORADOR'}
                             </div>
                         </div>
                     </div>
                 </div>
-              </div>
             </div>
         </div>
         
         <style>{`
-            .a4-container {
+            @media screen {
+                .no-print-bg {
+                    background-color: #f1f5f9;
+                }
+            }
+            .a4-page {
                 width: 210mm;
                 min-height: 297mm;
                 background: white;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
             }
             .budget-document, .budget-document * {
                 font-family: 'Outfit', sans-serif !important;
             }
+            .page-break-inside-avoid {
+                page-break-inside: avoid;
+            }
             @media print {
-                body { background: white !important; }
-                .a4-container {
+                body { 
+                    background: white !important; 
+                    margin: 0 !important; 
+                    padding: 0 !important; 
+                }
+                .a4-page {
                     margin: 0 !important;
                     padding: 0 !important;
                     box-shadow: none !important;
-                    width: 100% !important;
-                    min-height: auto !important;
+                    width: 210mm !important;
+                    min-height: 100% !important; /* Deixa fluir livremente entre páginas */
                 }
-                .budget-document { 
-                    border: none !important;
-                    margin: 0 !important;
-                }
+                .no-print { display: none !important; }
                 @page {
                   size: A4;
                   margin: 0;
                 }
+                .budget-document { border: none !important; }
+                table { page-break-inside: auto; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
+                thead { display: table-header-group; }
+                tfoot { display: table-footer-group; }
             }
         `}</style>
       </div>
