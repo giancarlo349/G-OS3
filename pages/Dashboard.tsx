@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ref, onValue, remove } from 'firebase/database';
 import { db } from '../services/firebase';
 import { Quote, User, QuoteStatus } from '../types';
-import { Plus, Search, FileText, Trash2, DollarSign, Activity, ChevronRight, ShieldAlert, Phone, User as UserIcon, X, AlertTriangle } from 'lucide-react';
+import { Plus, Search, FileText, Trash2, DollarSign, Activity, ChevronRight, ShieldAlert, Phone, User as UserIcon, X, AlertTriangle, Clock, CheckCircle2, Send } from 'lucide-react';
 
 interface DashboardProps {
   user: User;
@@ -68,11 +68,29 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNewQuote, onEditQuote }) 
     }
   };
 
-  const getStatusColor = (status: QuoteStatus) => {
+  const getStatusTheme = (status: QuoteStatus) => {
     switch (status) {
-      case 'Enviado': return 'text-green-400 bg-green-500/10 border-green-500/30';
-      case 'Finalizado': return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30';
-      default: return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+      case 'Enviado': 
+        return {
+          card: 'border-green-500/50 bg-green-950/20 hover:bg-green-900/30 hover:border-green-400',
+          badge: 'text-green-300 bg-green-500/20 border-green-500/40',
+          icon: <Send size={12} className="text-green-400" />,
+          glow: 'shadow-[0_0_25px_rgba(34,197,94,0.15)]'
+        };
+      case 'Finalizado': 
+        return {
+          card: 'border-blue-500/50 bg-blue-950/20 hover:bg-blue-900/30 hover:border-blue-400',
+          badge: 'text-blue-300 bg-blue-500/20 border-blue-500/40',
+          icon: <CheckCircle2 size={12} className="text-blue-400" />,
+          glow: 'shadow-[0_0_25px_rgba(59,130,246,0.15)]'
+        };
+      default: 
+        return {
+          card: 'border-amber-500/50 bg-amber-950/20 hover:bg-amber-900/30 hover:border-amber-400',
+          badge: 'text-amber-300 bg-amber-500/20 border-amber-500/40',
+          icon: <Clock size={12} className="text-amber-400" />,
+          glow: 'shadow-[0_0_25px_rgba(245,158,11,0.15)]'
+        };
     }
   };
 
@@ -133,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNewQuote, onEditQuote }) 
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
             <input
               type="text"
-              placeholder="BUSCAR CLIENTE OU COLABORADOR..."
+              placeholder="BUSCAR CLIENTE OU ATENDENTE..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500 font-mono min-w-[300px]"
@@ -154,58 +172,70 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNewQuote, onEditQuote }) 
           LENDO_SISTEMA_DE_ARQUIVOS...
         </div>
       ) : filteredQuotes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredQuotes.map((quote) => (
-            <div
-              key={quote.id}
-              onClick={() => onEditQuote(quote)}
-              className="bg-slate-900/20 border border-slate-800/60 hover:border-cyan-500/40 p-5 rounded-2xl cursor-pointer transition-all hover:bg-slate-900/40 group relative"
-            >
-              <div className="absolute top-4 right-4 z-10">
-                <button
-                  onClick={(e) => triggerDelete(e, quote)}
-                  className="p-2 bg-slate-950/50 hover:bg-red-500 hover:text-white rounded-lg text-slate-500 transition-all md:opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-
-              <div className="flex items-start justify-between mb-4">
-                <div className={`px-2 py-0.5 rounded border text-[9px] font-mono uppercase tracking-widest font-black ${getStatusColor(quote.status)}`}>
-                  {quote.status || 'Pendente'}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredQuotes.map((quote) => {
+            const theme = getStatusTheme(quote.status || 'Pendente');
+            return (
+              <div
+                key={quote.id}
+                onClick={() => onEditQuote(quote)}
+                className={`border p-6 rounded-3xl cursor-pointer transition-all hover:scale-[1.02] group relative overflow-hidden ${theme.card} ${theme.glow}`}
+              >
+                {/* Background Decorativo */}
+                <div className={`absolute -right-4 -top-4 opacity-10 pointer-events-none transform rotate-12`}>
+                   <FileText size={120} />
                 </div>
-                <div className="text-slate-700 text-[9px] font-mono">
-                  ID: {quote.id.slice(-6).toUpperCase()}
-                </div>
-              </div>
 
-              <h4 className="text-slate-100 font-bold text-lg mb-1 truncate pr-10 uppercase tracking-tight">{quote.clientName}</h4>
-              
-              <div className="space-y-1 mb-6">
-                {quote.clientPhone && (
-                  <div className="flex items-center gap-2 text-slate-500 text-[10px] font-mono">
-                    <Phone size={10} className="text-cyan-700" />
-                    {quote.clientPhone}
+                <div className="absolute top-4 right-4 z-10">
+                  <button
+                    onClick={(e) => triggerDelete(e, quote)}
+                    className="p-2 bg-slate-950/80 hover:bg-red-500 hover:text-white rounded-xl text-slate-500 transition-all md:opacity-0 group-hover:opacity-100 backdrop-blur-sm"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`px-3 py-1 rounded-full border text-[9px] font-mono uppercase tracking-widest font-black flex items-center gap-1.5 ${theme.badge}`}>
+                    {theme.icon}
+                    {quote.status || 'Pendente'}
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-slate-400 text-[10px] font-mono font-bold">
-                  <UserIcon size={10} className="text-cyan-600" />
-                  COLAB: <span className="text-slate-300">{(quote.author || 'N/A').toUpperCase()}</span>
+                  <div className="text-slate-500 text-[9px] font-mono font-bold">
+                    #{quote.id.slice(-6).toUpperCase()}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between border-t border-slate-800/50 pt-4">
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-mono text-slate-600 uppercase">Valor Total</span>
-                  <span className="text-cyan-400 font-mono font-bold text-lg">R$ {quote.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <h4 className="text-slate-100 font-black text-xl mb-3 truncate pr-10 uppercase tracking-tight font-outfit">{quote.clientName}</h4>
+                
+                <div className="space-y-2 mb-8">
+                  {quote.clientPhone && (
+                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-mono font-bold">
+                      <Phone size={10} className="text-slate-600" />
+                      {quote.clientPhone}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-slate-400 text-[10px] font-mono font-bold">
+                    <UserIcon size={10} className="text-slate-600" />
+                    ATENDENTE: <span className="text-cyan-400">{(quote.author || 'SISTEMA').toUpperCase()}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col items-end">
-                   <span className="text-[9px] font-mono text-slate-600 uppercase">Data</span>
-                   <span className="text-slate-500 font-mono text-[10px]">{new Date(quote.createdAt).toLocaleDateString('pt-BR')}</span>
+
+                <div className="flex items-center justify-between border-t border-slate-800/80 pt-5">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-mono text-slate-500 uppercase font-black tracking-widest">Valor Geral</span>
+                    <span className="text-slate-100 font-mono font-black text-xl">
+                      <span className="text-cyan-600 text-xs mr-1">R$</span>
+                      {quote.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                     <span className="text-[9px] font-mono text-slate-500 uppercase font-black tracking-widest">Emissão</span>
+                     <span className="text-slate-400 font-mono text-[10px] font-bold">{new Date(quote.createdAt).toLocaleDateString('pt-BR')}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-20 border border-dashed border-slate-900 rounded-[2.5rem]">
