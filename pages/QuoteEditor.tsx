@@ -7,7 +7,8 @@ import {
   X, Trash2, Save, Search, ArrowLeft, ChevronRight,
   Play, User, Phone, ShoppingBag, Check, 
   ChevronLeft, ChevronUp, ChevronDown, Plus, 
-  ShieldAlert, LayoutList, SearchCode, UserCheck, Activity, AlertCircle, Printer, FileText
+  ShieldAlert, LayoutList, SearchCode, UserCheck, Activity, AlertCircle, Printer, FileText, CheckCircle2,
+  Calendar, Info, Tag
 } from 'lucide-react';
 
 interface QuoteEditorProps {
@@ -25,6 +26,7 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPrintView, setShowPrintView] = useState(false);
+  const [copiedSuccess, setCopiedSuccess] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [manualPrice, setManualPrice] = useState('');
@@ -157,6 +159,15 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
   const handleGenerateBudget = async () => {
     const success = await saveQuote(true);
     if (success) {
+      const msg = `Olá! Estou te enviando o orçamento 😊\nPeço, por gentileza, que confira os comentários, valores e quantidades.\nCaso precise de alguma alteração, é só nos avisar que ajustamos.\nEm alguns casos, adaptamos alguns produtos para os que temos à pronta entrega.\nSe encontrar qualquer erro ou tiver dúvidas, é só falar com a gente.`;
+      
+      try {
+        await navigator.clipboard.writeText(msg);
+        setCopiedSuccess(true);
+        setTimeout(() => setCopiedSuccess(false), 3000);
+      } catch (err) {
+        console.warn("Falha ao copiar para clipboard.");
+      }
       setShowPrintView(true);
     }
   };
@@ -164,101 +175,168 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
   const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const health = items.length === 0 ? 0 : Math.round((items.filter(i => i.isVerified).length / items.length) * 100);
 
-  // VIEW DE IMPRESSÃO FORMAL
   if (showPrintView) {
     return (
-      <div className="fixed inset-0 z-[2000] bg-slate-900 text-black overflow-auto animate-fade">
-        <div className="no-print bg-slate-950/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 flex justify-between items-center px-10">
-            <div className="flex items-center gap-4">
-                <button onClick={() => setShowPrintView(false)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"><X size={24}/></button>
-                <span className="text-white font-mono font-bold uppercase tracking-widest text-xs">Visualização do Orçamento Final</span>
+      <div className="fixed inset-0 z-[2000] bg-slate-50 text-black overflow-auto animate-fade font-soft">
+        <div className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200 p-4 sticky top-0 flex justify-between items-center px-10 shadow-sm">
+            <div className="flex items-center gap-6">
+                <button onClick={() => setShowPrintView(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-all font-bold text-xs border border-slate-200 uppercase">
+                    <ArrowLeft size={14}/> VOLTAR AO EDITOR
+                </button>
+                <div className="flex flex-col">
+                   <span className="text-emerald-700 font-black uppercase text-[10px] tracking-widest">VISUALIZAÇÃO DE DOCUMENTO A4</span>
+                   {copiedSuccess && <span className="text-emerald-500 text-[9px] font-bold animate-pulse flex items-center gap-1"><CheckCircle2 size={10}/> MENSAGEM COPIADA PARA O WHATSAPP</span>}
+                </div>
             </div>
-            <button onClick={() => window.print()} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-xl shadow-xl transition-all active:scale-95">
-                <Printer size={20}/> IMPRIMIR / SALVAR PDF
+            <button onClick={() => window.print()} className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black px-10 py-3 rounded-xl shadow-lg transition-all active:scale-95 text-xs">
+                <Printer size={18}/> IMPRIMIR ORÇAMENTO
             </button>
         </div>
 
-        {/* FOLHA DE ORÇAMENTO (PRETO NO BRANCO) */}
-        <div className="max-w-[210mm] mx-auto p-12 bg-white min-h-screen text-black shadow-2xl my-10 print:my-0 print:shadow-none print-only-display budget-document">
-            {/* CABEÇALHO */}
-            <div className="flex flex-col items-center text-center space-y-1 mb-8 border-b-2 border-black pb-6">
-                <div className="w-20 h-20 mb-3 flex items-center justify-center border-2 border-black rounded-xl">
-                    <ShoppingBag size={40} color="black" />
+        {/* DOCUMENTO FORMAL EM PORTUGUÊS (OTIMIZADO PARA A4) */}
+        <div className="a4-container mx-auto bg-white text-black shadow-2xl my-10 print:my-0 print:shadow-none budget-document relative">
+            <div className="p-[15mm] h-full flex flex-col">
+              {/* CABEÇALHO SUAVE */}
+              <div className="flex flex-col items-center text-center space-y-2 mb-10">
+                  <div className="w-16 h-16 mb-2 flex items-center justify-center bg-yellow-50 rounded-full border-2 border-yellow-200">
+                      <ShoppingBag size={32} className="text-emerald-700" />
+                  </div>
+                  <h1 className="text-xl font-black uppercase tracking-wide text-emerald-900 font-outfit">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
+                  <p className="text-[10px] font-bold text-slate-500 tracking-wider">CNPJ: 05.862.953/0001-82</p>
+                  <p className="text-[9px] text-slate-400 max-w-md font-medium uppercase">
+                    RUA JOAQUIM JANUS PENTEADO, 125 | A. JORDANESIA/ CAJAMAR-SP | CEP 07786-520
+                  </p>
+                  <div className="flex items-center gap-3 mt-2 text-[9px] font-bold text-emerald-800 bg-emerald-50 px-5 py-1 rounded-full border border-emerald-100">
+                    <span className="flex items-center gap-1"><Phone size={8}/> (11) 4447-3578</span>
+                    <span className="w-1 h-1 rounded-full bg-emerald-300"></span>
+                    <span>vendasbazarnovareal@gmail.com</span>
+                  </div>
+              </div>
+
+              <div className="flex items-center gap-4 mb-8">
+                  <div className="h-[1px] flex-grow bg-slate-100"></div>
+                  <h2 className="text-center text-[10px] font-black tracking-[0.4em] uppercase text-slate-400 font-outfit">ORÇAMENTO DE MATERIAIS</h2>
+                  <div className="h-[1px] flex-grow bg-slate-100"></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 mb-6 px-1">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest"><User size={10}/> CLIENTE</div>
+                    <div className="text-base font-black text-slate-900 border-b border-emerald-50 pb-0.5">{clientName || 'NÃO INFORMADO'}</div>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <div className="flex items-center justify-end gap-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest"><Calendar size={10}/> EMISSÃO</div>
+                    <div className="text-sm font-bold text-slate-800">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                  </div>
+              </div>
+
+              {/* TABELA LIMPA E SUAVE */}
+              <div className="flex-grow overflow-hidden border border-slate-100 rounded-2xl shadow-sm">
+                  <table className="w-full border-collapse">
+                      <thead>
+                          <tr className="bg-emerald-600 text-white">
+                              <th className="px-5 py-3 text-left uppercase text-[9px] font-black tracking-widest">PRODUTO / DESCRIÇÃO</th>
+                              <th className="px-5 py-3 text-center text-[9px] font-black w-16">QTD.</th>
+                              <th className="px-5 py-3 text-right text-[9px] font-black w-32">PREÇO UNIT.</th>
+                              <th className="px-5 py-3 text-right text-[9px] font-black w-32">TOTAL</th>
+                          </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                          {items.map((item, idx) => (
+                              <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-yellow-50/20'}>
+                                  <td className="px-5 py-2.5 text-[10px] uppercase font-bold text-slate-700">
+                                      <div className="flex items-start gap-2">
+                                          <Tag size={8} className="mt-1 text-emerald-200" />
+                                          <span>{item.description}</span>
+                                      </div>
+                                      {item.comment && (
+                                        <div className="text-[8px] italic text-slate-400 font-medium mt-0.5 ml-4">
+                                          Nota: {item.comment}
+                                        </div>
+                                      )}
+                                  </td>
+                                  <td className="px-5 py-2.5 text-center text-[10px] font-bold text-slate-500">{item.quantity}</td>
+                                  <td className="px-5 py-2.5 text-right text-[10px] font-medium text-slate-500">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                  <td className="px-5 py-2.5 text-right text-[10px] font-black text-emerald-900">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                              </tr>
+                          ))}
+                          {[...Array(Math.max(0, 15 - items.length))].map((_, i) => (
+                              <tr key={`empty-${i}`} className={`h-8 ${(items.length + i) % 2 === 0 ? 'bg-white' : 'bg-yellow-50/20'}`}>
+                                  <td></td><td></td><td></td><td></td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </table>
+              </div>
+
+              {/* RODAPÉ DO DOCUMENTO */}
+              <div className="mt-8 border-t border-emerald-100 pt-6">
+                <div className="flex justify-between items-center mb-10 px-4">
+                   <div className="text-[9px] font-black uppercase text-emerald-800 tracking-widest">VALOR TOTAL DO ORÇAMENTO</div>
+                   <div className="text-xl font-black text-emerald-900">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                 </div>
-                <h1 className="text-2xl font-black uppercase tracking-tight text-black">MASATOCHI YAHIRO BAZAR E ARTIGOS EM GERAL</h1>
-                <p className="text-sm font-bold text-black">CNPJ: 05.862.953/0001-82</p>
-                <p className="text-[10px] text-black">RUA JOAQUIM JANUS PENTEADO, 125 | A. JORDANESIA/ CAJAMAR-SP | CEP 07786-520</p>
-                <p className="text-[10px] font-bold text-black">TEL: (11) 4447-3578 | E-MAIL: vendasbazarnovareal@gmail.com</p>
-            </div>
 
-            <h2 className="text-center text-lg font-black underline mb-6 uppercase text-black">ORÇAMENTO DE MATERIAIS</h2>
+                <div className="grid grid-cols-[1fr_200px] gap-8 items-start">
+                    <div className="space-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                      <div className="flex gap-3">
+                          <div className="w-8 h-8 flex-shrink-0 bg-yellow-100 text-yellow-700 flex items-center justify-center font-black text-xs rounded-xl shadow-sm">!</div>
+                          <div className="space-y-0.5">
+                            <p className="text-[9px] font-black text-slate-900 uppercase">Aviso de Estoque</p>
+                            <p className="text-[8px] font-medium text-slate-500 leading-tight">
+                                Marcas e qualidade podem variar. Adaptamos alguns itens para pronta entrega caso necessário.
+                            </p>
+                          </div>
+                      </div>
+                      <div className="flex gap-3">
+                          <div className="w-8 h-8 flex-shrink-0 bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-xs rounded-xl shadow-sm"><Info size={14}/></div>
+                          <div className="space-y-0.5">
+                            <p className="text-[9px] font-black text-slate-900 uppercase">Política de Validade</p>
+                            <p className="text-[8px] font-bold text-emerald-700 italic leading-tight">
+                                Válido por 04 dias úteis. Sujeito a alterações diárias de preço e estoque.
+                            </p>
+                          </div>
+                      </div>
+                    </div>
 
-            <div className="flex justify-between items-end mb-4 font-bold text-[11px] text-black">
-                <div className="uppercase">CLIENTE: <span className="underline ml-1">{clientName || 'NÃO INFORMADO'}</span></div>
-                <div>DATA: {new Date().toLocaleDateString('pt-BR')}</div>
-            </div>
-
-            {/* TABELA FORMAL */}
-            <table className="w-full border-collapse border-2 border-black mb-8 text-black">
-                <thead>
-                    <tr className="bg-slate-100">
-                        <th className="border-2 border-black px-4 py-2 text-left uppercase text-[10px] font-black">PRODUTO / DESCRIÇÃO</th>
-                        <th className="border-2 border-black px-4 py-2 text-center text-[10px] font-black w-16">QUANT.</th>
-                        <th className="border-2 border-black px-4 py-2 text-right text-[10px] font-black w-32">PREÇO UNIDADE</th>
-                        <th className="border-2 border-black px-4 py-2 text-right text-[10px] font-black w-32">TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items.map((item, idx) => (
-                        <tr key={idx} className="border border-black">
-                            <td className="border-x border-black px-4 py-1.5 text-[10px] uppercase font-medium">
-                                {item.description}
-                                {item.comment && <div className="text-[8px] italic text-gray-600 mt-0.5">// {item.comment}</div>}
-                            </td>
-                            <td className="border-x border-black px-4 py-1.5 text-center text-[10px]">{item.quantity}</td>
-                            <td className="border-x border-black px-4 py-1.5 text-right text-[10px]">R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                            <td className="border-x border-black px-4 py-1.5 text-right text-[10px] font-bold">R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                    ))}
-                    {/* LINHAS VAZIAS PARA MANTER O PADRÃO VISUAL */}
-                    {[...Array(Math.max(0, 8 - items.length))].map((_, i) => (
-                        <tr key={`empty-${i}`} className="h-6 border border-black">
-                            <td className="border-x border-black"></td>
-                            <td className="border-x border-black"></td>
-                            <td className="border-x border-black"></td>
-                            <td className="border-x border-black"></td>
-                        </tr>
-                    ))}
-                </tbody>
-                <tfoot>
-                    <tr className="bg-slate-50 border-t-2 border-black">
-                        <td colSpan={3} className="px-4 py-2 text-right font-black uppercase text-xs border-r-2 border-black">TOTAL DO ORÇAMENTO</td>
-                        <td className="px-4 py-2 text-right font-black text-sm text-black">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            {/* RODAPÉ E REGRAS */}
-            <div className="space-y-4 text-[10px] leading-tight mt-10 text-black">
-                <p className="uppercase font-bold text-black">O ORÇAMENTO ACIMA PODE ALTERAR, CONFORME MARCAS E QUALIDADE, TEMOS OUTROS PRODUTOS QUE PODEM SUBSTITUIR O ORÇAMENTO!</p>
-                <p className="font-black italic text-black">Obs.: Orçamento válido por 04 dias visto que os produtos podem variar ou acabar em pronta entrega.</p>
-                
-                <div className="pt-12 flex flex-col font-bold">
-                    <span className="uppercase text-[9px] text-gray-500">COLABORADOR RESPONSÁVEL</span>
-                    <span className="text-sm underline decoration-2 underline-offset-4 text-black">{author.toUpperCase() || 'EQUIPE BAZAR'}</span>
+                    <div className="flex flex-col items-center justify-center self-end pb-2">
+                        <div className="text-center space-y-2">
+                            <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">ATENDENTE RESPONSÁVEL</p>
+                            <div className="text-sm font-black text-emerald-900 border-b border-emerald-100 px-4 min-w-[150px]">
+                              {author.toUpperCase() || 'EQUIPE BAZAR'}
+                            </div>
+                        </div>
+                    </div>
                 </div>
+              </div>
             </div>
         </div>
         
-        {/* CSS PARA FORÇAR CORES NA IMPRESSÃO E PREVIEW */}
         <style>{`
+            .a4-container {
+                width: 210mm;
+                min-height: 297mm;
+                background: white;
+            }
             .budget-document, .budget-document * {
-                color: black !important;
-                border-color: black !important;
+                font-family: 'Outfit', sans-serif !important;
             }
             @media print {
-                .print-only-display { display: block !important; }
                 body { background: white !important; }
+                .a4-container {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    box-shadow: none !important;
+                    width: 100% !important;
+                    min-height: auto !important;
+                }
+                .budget-document { 
+                    border: none !important;
+                    margin: 0 !important;
+                }
+                @page {
+                  size: A4;
+                  margin: 0;
+                }
             }
         `}</style>
       </div>
@@ -305,7 +383,6 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
       </div>
 
       <div className="grid grid-cols-[1fr_380px] gap-6 items-start">
-        
         <div className="space-y-6">
           <div className="bg-slate-900/40 p-6 rounded-[2rem] border border-slate-800/40 shadow-inner">
              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -318,7 +395,7 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
                    <input className="cyber-input" value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="(00) 00000-0000" />
                 </div>
                 <div className="space-y-1.5">
-                   <label className="text-[9px] font-mono text-cyan-800 uppercase font-black tracking-widest flex items-center gap-2"><UserCheck size={10}/> Colaborador</label>
+                   <label className="text-[9px] font-mono text-cyan-800 uppercase font-black tracking-widest flex items-center gap-2"><UserCheck size={10}/> Atendente</label>
                    <input className="cyber-input" value={author} onChange={e => setAuthor(e.target.value)} placeholder="VENDEDOR" />
                 </div>
              </div>
@@ -551,17 +628,17 @@ const QuoteEditor: React.FC<QuoteEditorProps> = ({ user, quote, onClose }) => {
              </div>
           </div>
         </div>
-
       </div>
 
+      {/* MODAL DE EXCLUSÃO FIXO NO MEIO DA VIEWPORT */}
       {itemToDelete && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade">
-           <div className="bg-slate-900 border border-red-500/50 p-8 rounded-[2rem] max-w-sm w-full shadow-2xl space-y-6">
+        <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-slate-950/90 backdrop-blur-md animate-fade">
+           <div className="bg-slate-900 border border-red-500/50 p-8 rounded-[2rem] max-w-sm w-full shadow-2xl space-y-6 mx-4">
               <div className="flex flex-col items-center text-center space-y-4">
                  <div className="p-4 bg-red-500/10 rounded-full border border-red-500/20 text-red-500 animate-pulse">
                     <ShieldAlert size={32} />
                  </div>
-                 <h3 className="text-lg font-mono font-black text-slate-100 uppercase tracking-tighter">REMOVER_REGISTRO?</h3>
+                 <h3 className="text-lg font-mono font-black text-slate-100 uppercase tracking-tighter">REMOVER REGISTRO?</h3>
                  <p className="text-xs font-mono text-slate-500 leading-relaxed uppercase">
                     Este item será removido apenas desta sessão de edição. O banco de dados histórico não será afetado.
                  </p>

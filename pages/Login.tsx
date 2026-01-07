@@ -38,14 +38,14 @@ const Login: React.FC = () => {
           <h1 className="text-3xl font-bold font-mono text-slate-100 tracking-widest">
             BUDGET<span className="text-cyan-400">HACKER</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-2 font-mono uppercase tracking-tighter">Secure Quotation Terminal v1.0</p>
+          <p className="text-slate-500 text-sm mt-2 font-mono uppercase tracking-tighter">Terminal de Atendimento v1.0</p>
         </div>
 
         <div className="bg-slate-900/50 backdrop-blur-sm border border-cyan-900/40 p-8 rounded-2xl cyber-border transition-all">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-xs font-mono text-cyan-500/70 uppercase flex items-center gap-2">
-                <Mail size={12} /> ID de Operador (Email)
+                <Mail size={12} /> ID de Atendente (Email)
               </label>
               <div className="relative">
                 <input
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500/50 font-mono text-sm transition-all"
-                  placeholder="admin@access.net"
+                  placeholder="atendente@empresa.com"
                   required
                 />
               </div>

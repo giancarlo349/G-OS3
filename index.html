@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BudgetHacker Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #020617;
@@ -15,12 +15,15 @@
         body {
             background-color: var(--bg-deep);
             color: #f8fafc;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Outfit', sans-serif;
             overflow-x: hidden;
             min-height: 100vh;
         }
         .font-mono {
             font-family: 'Fira Code', monospace;
+        }
+        .font-soft {
+            font-family: 'Quicksand', sans-serif;
         }
         .scanline {
             width: 100%;
@@ -55,31 +58,10 @@
             .no-print {
                 display: none !important;
             }
-            .print-only {
-                display: block !important;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                background: white;
-            }
             @page {
-                margin: 1cm;
+                margin: 0.5cm;
                 size: portrait;
             }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th, td {
-                border: 1px solid #000 !important;
-                padding: 4px 8px !important;
-                font-size: 10pt !important;
-                color: black !important;
-            }
-        }
-        .print-only {
-            display: none;
         }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -88,7 +70,6 @@
         ::-webkit-scrollbar-thumb:hover { background: #1e293b; }
         
         input::placeholder { color: #1e293b; }
-        select { appearance: none; }
     </style>
 <script type="importmap">
 {

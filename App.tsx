@@ -87,7 +87,7 @@ const App: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <span className="hidden md:inline text-[10px] text-slate-500 font-mono">
-                OPERADOR: <span className="text-cyan-600">{user.email?.split('@')[0].toUpperCase()}</span>
+                ATENDENTE: <span className="text-cyan-600">{user.email?.split('@')[0].toUpperCase()}</span>
               </span>
               <button 
                 onClick={handleLogout}
